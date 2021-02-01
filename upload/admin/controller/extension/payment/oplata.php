@@ -3,7 +3,7 @@
 class ControllerExtensionPaymentOplata extends Controller
 {
     private $error = [];
-    private $extensionVersion = '2.0.1';
+    private $extensionVersion = '2.0.2';
 
     public function install() {
         $this->load->model('extension/payment/oplata');
@@ -150,12 +150,12 @@ class ControllerExtensionPaymentOplata extends Controller
         $fondyOrder = $this->model_extension_payment_oplata->getLastFondyOrder($orderID);
         $jsonResponse = [];
 
-        if (!empty($fondyOrder) && $fondyOrder['last_tran_type'] != 'refund'){
+        if (!empty($fondyOrder)){
             $this->load->model('sale/order');
             $order = $this->model_sale_order->getOrder($orderID);
             $refundAmount = round($this->request->post['amount'] * $order['currency_value'] * 100);
 
-            if ($fondyOrder['preauth'] === 'Y' && $fondyOrder['last_tran_type'] !== 'capture')
+            if ($fondyOrder['preauth'] === 'Y' && $fondyOrder['last_tran_type'] == 'purchase')
                 $refundAmount = $fondyOrder['total'];
 
             try {
@@ -166,9 +166,7 @@ class ControllerExtensionPaymentOplata extends Controller
                     'currency' => $fondyOrder['currency_code'],
                 ]);
 
-                if ($refundAmount < $fondyOrder['total'])
-                    $fondyOrder['total'] -= $refundAmount;
-
+                $fondyOrder['total'] -= $refundAmount;
                 $fondyOrder['last_tran_type'] = 'reverse';
                 $this->model_extension_payment_oplata->updateFondyOrder($fondyOrder);
                 $jsonResponse['success_message'] = $this->language->get('text_success_action');;

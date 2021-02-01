@@ -58,7 +58,7 @@
                     </div>
                 </td>
             </tr>
-        {% elseif (order.last_tran_type != 'reverse') %}
+        {% elseif order.total %}
             <tr>
                 <td>{{ text_refund }}</td>
                 <td>
