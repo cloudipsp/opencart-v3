@@ -65,10 +65,10 @@ class ModelExtensionPaymentOplata extends Model
 
     public function reverse($requestData)
     {
-        $request =  $this->sendToAPI('reverse/order_id', $requestData);
+        $request = $this->sendToAPI('reverse/order_id', $requestData);
 
-        if ($request->revers_status =! 'approved')
-            throw new \Exception('Fondy refund status: ' . $request->revers_status);
+        if ($request->reverse_status != 'approved')
+            throw new \Exception('Fondy refund status: ' . $request->reverse_status);
 
         return true;
     }
@@ -85,6 +85,9 @@ class ModelExtensionPaymentOplata extends Model
         $requestData['signature'] = $this->getSignature($requestData, $secretKey);
         $request = $this->sendCurl('https://api.fondy.eu/api/' . $endpoint, $requestData);
 
+        if (empty($request->response) && empty($request->response->response_status))
+            throw new \Exception('Unknown Fondy API answer.');
+
         if ($request->response->response_status != 'success')
             throw new \Exception("Fondy response status: " . $request->response->response_status); // todo mb error message
 
@@ -95,7 +98,6 @@ class ModelExtensionPaymentOplata extends Model
     {
         $curl = curl_init($url);
 
-        curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
         curl_setopt($curl, CURLOPT_POST, true);

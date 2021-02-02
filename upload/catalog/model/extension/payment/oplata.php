@@ -129,6 +129,9 @@ class ModelExtensionPaymentOplata extends Model
         $requestData['signature'] = $this->getSignature($requestData, $secretKey);
         $request = $this->sendCurl('https://api.fondy.eu/api/' . $endpoint, $requestData);
 
+        if (empty($request->response) && empty($request->response->response_status))
+            throw new \Exception('Unknown Fondy API answer.');
+
         if ($request->response->response_status != 'success')
             throw new \Exception($request->response->error_message);
 
@@ -139,7 +142,6 @@ class ModelExtensionPaymentOplata extends Model
     {
         $curl = curl_init($url);
 
-        curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
         curl_setopt($curl, CURLOPT_POST, true);
