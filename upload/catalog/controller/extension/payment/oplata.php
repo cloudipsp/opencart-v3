@@ -28,7 +28,7 @@ class ControllerExtensionPaymentOplata extends Controller
                 'amount' => round($orderInfo['total'] * $orderInfo['currency_value'] * 100),
                 'currency' => $this->session->data['currency'],
                 'response_url' => $this->url->link('extension/payment/oplata/response', '', true),
-                'server_callback_url' => 'http://c4af0821e1dd.ngrok.io/index.php?route=extension/payment/oplata/callback', // $this->url->link('extension/payment/oplata/callback', '', true),
+                'server_callback_url' => $this->url->link('extension/payment/oplata/callback', '', true),
                 'lang' => $lang,
                 'sender_email' => $orderInfo['email'],
                 'preauth' => $this->config->get('payment_oplata_type') == 'preauth' ? 'Y' : 'N',
