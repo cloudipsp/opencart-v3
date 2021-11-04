@@ -37,7 +37,7 @@ class ControllerExtensionPaymentOplata extends Controller
 
             $this->model_extension_payment_oplata->addFondyOrder($fondyParams);
 
-            if ($this->config->get('payment_oplata_process_payment_type') == 'built_in_checkout'){
+            if ($this->config->get('payment_oplata_process_payment_type') == 'built_in_checkout') {
                 $checkoutToken = $this->model_extension_payment_oplata->getCheckoutToken($fondyParams);
                 $data['fondy_options'] = json_encode([
                     'options' => [
@@ -47,11 +47,15 @@ class ControllerExtensionPaymentOplata extends Controller
                         'full_screen' => false,
                         'locales' => [$lang],
                         'email' => true,
+                        'theme' => [
+                            'type' => $this->config->get('payment_oplata_style_type') ?: 'light',
+                            'preset' => $this->config->get('payment_oplata_style_preset') ?: 'black',
+                        ]
                     ],
                     'params' => ['token' => $checkoutToken],
                 ]);
-            }else $data['checkout_url'] = $this->model_extension_payment_oplata->getCheckoutUrl($fondyParams);
-        }catch (Exception $e){
+            } else $data['checkout_url'] = $this->model_extension_payment_oplata->getCheckoutUrl($fondyParams);
+        } catch (Exception $e) {
             $data['error_message'] = $e->getMessage();
             $this->log->write('FondyError: ' . $e->getMessage());
         }
@@ -63,7 +67,7 @@ class ControllerExtensionPaymentOplata extends Controller
     {
         $this->language->load('extension/payment/oplata');
 
-        if (($paymentValidation = $this->validate($this->request->post)) !== true){
+        if (($paymentValidation = $this->validate($this->request->post)) !== true) {
             $this->session->data['error'] = $paymentValidation;
             $this->response->redirect($this->url->link('checkout/checkout', '', true));
         }
@@ -87,7 +91,7 @@ class ControllerExtensionPaymentOplata extends Controller
             }
         }
 
-        if (($paymentValidation = $this->validate($this->request->post)) !== true){
+        if (($paymentValidation = $this->validate($this->request->post)) !== true) {
             http_response_code(400);
             $this->response->addHeader('Content-Type: application/json');
             $this->response->setOutput(json_encode(['error' => $paymentValidation]));
@@ -99,10 +103,11 @@ class ControllerExtensionPaymentOplata extends Controller
         $this->load->model('extension/payment/oplata');
 
         $fondyOrderID = $this->request->post['order_id'];
-        $orderID = strstr($fondyOrderID, $this->ORDER_SEPARATOR, true);
         $fondyOrderInfo = $this->model_extension_payment_oplata->getFondyOrder($fondyOrderID);
+        $orderID = strstr($fondyOrderID, $this->ORDER_SEPARATOR, true);
+        $orderInfo = $this->model_checkout_order->getOrder($orderID);
 
-        if (!empty($this->request->post['reversal_amount'])){ // reverse callback
+        if (!empty($this->request->post['reversal_amount'])) { // reverse callback
             $comment = 'Fondy refund successful! Refund amount: ' .
                 $this->request->post['reversal_amount'] / 100 . ' ' . $fondyOrderInfo['currency_code'];
             $this->model_checkout_order->addOrderHistory($orderID, $this->config->get('payment_oplata_order_reverse_status_id'), $comment);
@@ -112,12 +117,12 @@ class ControllerExtensionPaymentOplata extends Controller
         if ($fondyOrderInfo['last_tran_type'] === 'capture') // just exit if order already captured
             exit;
 
-        $comment = "Fondy payment id: " . $this->request->post['payment_id'] . '.';
-        if (!empty($this->request->post['response_description']) && !empty($this->request->post['response_code'])){
+        $comment = "Fondy payment id: {$this->request->post['payment_id']}.";
+        if (!empty($this->request->post['response_description']) && !empty($this->request->post['response_code'])) {
             $comment .= $this->language->get('error_payment') . $this->request->post['response_description'] . '. ' . $this->language->get('error_code') . $this->request->post['response_code'];
         }
 
-        switch ($this->request->post['order_status']){
+        switch ($this->request->post['order_status']) {
             case $this->ORDER_APPROVED: //we recive with this status in 3 type transaction callback - purchase, capture, reverse
                 $this->model_checkout_order->addOrderHistory($orderID, $this->config->get('payment_oplata_order_success_status_id'), $comment, $notify = true);
                 break;
@@ -126,10 +131,15 @@ class ControllerExtensionPaymentOplata extends Controller
                 $this->model_checkout_order->addOrderHistory($orderID, $this->config->get('payment_oplata_order_process_status_id'), $comment);
                 break;
             case $this->ORDER_DECLINED:
-            case $this->ORDER_EXPIRED:
                 $this->model_checkout_order->addOrderHistory($orderID, $this->config->get('payment_oplata_order_cancelled_status_id'), $comment);
                 break;
-            default: exit('undefined fondy order status');
+            case $this->ORDER_EXPIRED:
+                if ($orderInfo['order_status_id'] === $this->config->get('payment_oplata_order_success_status_id'))
+                    exit('order status already successful!');
+                $this->model_checkout_order->addOrderHistory($orderID, $this->config->get('payment_oplata_order_cancelled_status_id'), $comment);
+                break;
+            default:
+                exit('undefined fondy order status');
         }
 
         $this->model_extension_payment_oplata->updateFondyOrder($fondyOrderID, $this->request->post);
@@ -143,7 +153,7 @@ class ControllerExtensionPaymentOplata extends Controller
         $merchantID = $this->config->get('payment_oplata_merchant');
         $secretKey = $this->config->get('payment_oplata_secretkey');
 
-        if ($this->config->get('payment_oplata_environment') == 'test'){
+        if ($this->config->get('payment_oplata_environment') == 'test') {
             $merchantID = $this->model_extension_payment_oplata->getTestMerchantID();
             $secretKey = $this->model_extension_payment_oplata->getTestMerchantSecretKey();
         }

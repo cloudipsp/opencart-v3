@@ -3,7 +3,7 @@
 class ControllerExtensionPaymentOplata extends Controller
 {
     private $error = [];
-    private $extensionVersion = '2.0.2';
+    private $extensionVersion = '2.1.0';
 
     public function install() {
         $this->load->model('extension/payment/oplata');
@@ -33,7 +33,8 @@ class ControllerExtensionPaymentOplata extends Controller
 
         $data['breadcrumbs'] = $this->getBreadcrumbs();
         $data['extension_version'] = $this->extensionVersion;
-        $data['process_payment_types'] = $this->processPaymentTypes();
+        $data['process_payment_types'] = $this->getProcessPaymentTypes();
+        $data['style_presets'] = $this->getStylePresets();
         $data['action'] = $this->url->link('extension/payment/oplata', 'user_token=' . $this->session->data['user_token'], true);
         $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true);
         $this->load->model('localisation/order_status');
@@ -42,18 +43,20 @@ class ControllerExtensionPaymentOplata extends Controller
         $data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
         $formInputs = [
-            "payment_oplata_status",
-            "payment_oplata_environment",
-            "payment_oplata_merchant",
-            "payment_oplata_secretkey",
-            "payment_oplata_process_payment_type",
-            "payment_oplata_type",
+            'payment_oplata_status',
+            'payment_oplata_environment',
+            'payment_oplata_merchant',
+            'payment_oplata_secretkey',
+            'payment_oplata_process_payment_type',
+            'payment_oplata_type',
             'payment_oplata_geo_zone_id',
-            "payment_oplata_sort_order",
-            "payment_oplata_order_success_status_id",
-            "payment_oplata_order_cancelled_status_id",
-            "payment_oplata_order_process_status_id",
-            "payment_oplata_order_reverse_status_id",
+            'payment_oplata_sort_order',
+            'payment_oplata_order_success_status_id',
+            'payment_oplata_order_cancelled_status_id',
+            'payment_oplata_order_process_status_id',
+            'payment_oplata_order_reverse_status_id',
+            'payment_oplata_style_type',
+            'payment_oplata_style_preset',
         ];
         foreach ($formInputs as $v)
             $data[$v] = (isset($this->request->post[$v])) ? $this->request->post[$v] : $this->config->get($v);
@@ -198,11 +201,28 @@ class ControllerExtensionPaymentOplata extends Controller
         return !$this->error;
     }
 
-    private function processPaymentTypes()
+    private function getProcessPaymentTypes()
     {
         return [
             'redirect' => $this->language->get('entry_redirect'),
             'built_in_checkout' => $this->language->get('entry_built_in_checkout'),
+        ];
+    }
+
+    private function getStylePresets()
+    {
+        return [
+            'black' => 'black',
+            'vibrant_gold' => 'vibrant gold',
+            'vibrant_silver' => 'vibrant silver',
+            'euphoric_pink' => 'euphoric pink',
+            'solid_black' => 'solid black',
+            'silver' => 'silver',
+            'black_and_white' => 'black and white',
+            'heated_steel' => 'heated steel',
+            'nude_pink' => 'nude pink',
+            'tropical_gold' => 'tropical gold',
+            'navy_shimmer' => 'navy shimmer',
         ];
     }
 

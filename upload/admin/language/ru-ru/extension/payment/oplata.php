@@ -5,6 +5,7 @@ $_['heading_title'] = 'Fondy';
 // Tab
 $_['tab_general'] = 'Основные настройки';
 $_['tab_order_status'] = 'Статус заказа';
+    $_['tab_style'] = 'Стили';
 
 // Text
 $_['text_edit'] = 'Редакторование модуля';
@@ -47,6 +48,10 @@ $_['entry_styles'] = 'Стили';
 $_['entry_process_payment_type'] = 'Способ интеграции';
 $_['entry_redirect'] = 'Перенаправление на Fondy';
 $_['entry_built_in_checkout'] = 'Встроенная форма в корзине';
+$_['entry_style_theme'] = 'Тема';
+$_['entry_light'] = 'Светлая';
+$_['entry_dark'] = 'Тёмная';
+$_['entry_style_preset'] = 'Пресет';
 
 // Btn
 $_['btn_capture'] = 'Списать';

@@ -5,6 +5,7 @@ $_['heading_title'] = 'Fondy';
 // Tab
 $_['tab_general'] = 'General settings';
 $_['tab_order_status'] = 'Order status';
+$_['tab_style'] = 'Style';
 
 // Text
 $_['text_edit'] = 'Edit module';
@@ -47,6 +48,10 @@ $_['entry_styles'] = 'Fondy Styles';
 $_['entry_process_payment_type'] = 'Payment integration type';
 $_['entry_redirect'] = 'Redirect to Fondy';
 $_['entry_built_in_checkout'] = 'Built in checkout';
+$_['entry_style_theme'] = 'Theme';
+$_['entry_light'] = 'Light';
+$_['entry_dark'] = 'Dark';
+$_['entry_style_preset'] = 'Preset';
 
 // Btn
 $_['btn_capture'] = 'Capture';
